@@ -915,25 +915,53 @@ BOOL isExiting = FALSE;
     nav.navigationBarHidden = NO;
     
     self.title = _browserOptions.title;
-    if (_browserOptions.toolbarcolor) {
-        nav.navigationBar.barTintColor = [self colorFromHexString:_browserOptions.toolbarcolor];
+    
+    NSMutableDictionary<NSAttributedStringKey, id> *customTitleTextAttributes = @{}.mutableCopy;
+            
+    if (@available(iOS 13.0, *)) {
+        // Adopting new navigation bar appearance for iOS 13+
+        
+        UINavigationBarAppearance *appearance = [UINavigationBarAppearance new];
+        
+        if (!_browserOptions.toolbartranslucent) {
+            [appearance configureWithOpaqueBackground];
+        } else {
+            [appearance configureWithDefaultBackground];
+        }
+
+        if (_browserOptions.toolbarcolor) {
+            appearance.backgroundColor = [self colorFromHexString:_browserOptions.toolbarcolor];
+        }
+                
+        if (_browserOptions.titlecolor) {
+            [customTitleTextAttributes setObject: [self colorFromHexString:_browserOptions.titlecolor]
+                                          forKey: NSForegroundColorAttributeName];            
+        }
+        
+        appearance.titleTextAttributes = customTitleTextAttributes;
+        
+        nav.navigationBar.standardAppearance = appearance;
+        nav.navigationBar.scrollEdgeAppearance = appearance;
+    } else {
+        // Legacy navigation bar styling
+        
+        if (_browserOptions.toolbarcolor) {
+            nav.navigationBar.barTintColor = [self colorFromHexString:_browserOptions.toolbarcolor];
+        }
+        
+        if (_browserOptions.titlecolor) {
+            [nav.navigationBar setTitleTextAttributes:@{
+                NSForegroundColorAttributeName: [self colorFromHexString:_browserOptions.titlecolor],
+            }];
+        }
     }
     
-    if (_browserOptions.titlecolor) {
-        [nav.navigationBar setTitleTextAttributes:@{
-            NSForegroundColorAttributeName: [self colorFromHexString:_browserOptions.titlecolor],
-        }];
-    }
-
     if (_browserOptions.closebuttoncolor) {
        nav.navigationBar.tintColor = [self colorFromHexString:_browserOptions.closebuttoncolor];
     }
     
     self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(close)];
     
-    if (_browserOptions.toolbarcolor != nil) { // Set toolbar color if user sets it in options
-      nav.navigationBar.barTintColor = [self colorFromHexString:_browserOptions.toolbarcolor];
-    }
     if (!_browserOptions.toolbartranslucent) { // Set toolbar translucent to no if user sets it in options
       nav.navigationBar.translucent = NO;
     }

@@ -862,8 +862,8 @@ BOOL isExiting = FALSE;
     
     [self.view addSubview:self.spinner];
     [NSLayoutConstraint activateConstraints:@[
-        [spinner.centerXAnchor constraintEqualToAnchor:webView.centerXAnchor],
-        [spinner.centerYAnchor constraintEqualToAnchor:webView.centerYAnchor],
+        [self.spinner.centerXAnchor constraintEqualToAnchor:self.webView.centerXAnchor],
+        [self.spinner.centerYAnchor constraintEqualToAnchor:self.webView.centerYAnchor],
     ]];
 }
 

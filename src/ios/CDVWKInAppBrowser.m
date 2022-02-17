@@ -797,15 +797,13 @@ BOOL isExiting = FALSE;
        [self.webView.scrollView setContentInsetAdjustmentBehavior:UIScrollViewContentInsetAdjustmentNever];
    }
 #endif
-    
+        
     self.spinner = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
     self.spinner.alpha = 1.000;
-    self.spinner.autoresizesSubviews = YES;
-    self.spinner.autoresizingMask = (UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleRightMargin);
+    self.spinner.translatesAutoresizingMaskIntoConstraints = NO;
     self.spinner.clearsContextBeforeDrawing = NO;
     self.spinner.clipsToBounds = NO;
     self.spinner.contentMode = UIViewContentModeScaleToFill;
-    self.spinner.frame = CGRectMake(CGRectGetMidX(self.webView.frame), CGRectGetMidY(self.webView.frame), 20.0, 20.0);
     self.spinner.hidden = NO;
     self.spinner.hidesWhenStopped = YES;
     self.spinner.multipleTouchEnabled = NO;
@@ -861,7 +859,12 @@ BOOL isExiting = FALSE;
     self.view.backgroundColor = [UIColor grayColor];
     [self.stack addArrangedSubview:self.addressLabel];
     [self.stack addArrangedSubview:self.webView];
+    
     [self.view addSubview:self.spinner];
+    [NSLayoutConstraint activateConstraints:@[
+        [self.spinner.centerXAnchor constraintEqualToAnchor:self.webView.centerXAnchor],
+        [self.spinner.centerYAnchor constraintEqualToAnchor:self.webView.centerYAnchor],
+    ]];
 }
 
 - (id)settingForKey:(NSString*)key

@@ -30,12 +30,16 @@ import android.provider.Browser;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.net.http.SslError;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
@@ -96,6 +100,7 @@ public class InAppBrowser extends CordovaPlugin {
     protected static final String LOG_TAG = "InAppBrowser";
     private static final String SELF = "_self";
     private static final String SYSTEM = "_system";
+    private static final String ANDROID = "_android";
     private static final String EXIT_EVENT = "exit";
     private static final String LOCATION = "location";
     private static final String ZOOM = "zoom";
@@ -127,8 +132,11 @@ public class InAppBrowser extends CordovaPlugin {
     private static final String BEFORELOAD = "beforeload";
     private static final String FULLSCREEN = "fullscreen";
     private static final String SHADOW_SIZE = "shadowsize";
+    private static final String USE_CUSTOM_TABS = "useCustomTabs";
+    private static final String HIDE_URL_BAR = "hideURLBar";
+    private static final String SHARE_STATE = "shareState";
 
-    private static final List customizableOptions = Arrays.asList(TITLE, TITLE_COLOR, STATUS_BAR_STYLE, SHADOW_SIZE, CLOSE_BUTTON_CAPTION, TOOLBAR_COLOR, NAVIGATION_COLOR, CLOSE_BUTTON_COLOR, CLOSE_BUTTON_ICON, FOOTER_COLOR);
+    private static final List customizableOptions = Arrays.asList(TITLE, TITLE_COLOR, STATUS_BAR_STYLE, SHADOW_SIZE, CLOSE_BUTTON_CAPTION, TOOLBAR_COLOR, NAVIGATION_COLOR, CLOSE_BUTTON_COLOR, CLOSE_BUTTON_ICON, FOOTER_COLOR, USE_CUSTOM_TABS, HIDE_URL_BAR, SHARE_STATE);
 
     private static final String STATUS_BAR_LIGHT_MODE = "light";
     private static final String STATUS_BAR_DARK_MODE = "dark";
@@ -168,7 +176,6 @@ public class InAppBrowser extends CordovaPlugin {
     private boolean fullscreen = true;
     private String[] allowedSchemes;
     private InAppBrowserClient currentClient;
-
 
     /**
      * Executes the request and returns PluginResult.
@@ -260,6 +267,32 @@ public class InAppBrowser extends CordovaPlugin {
                     else if (SYSTEM.equals(target)) {
                         LOG.d(LOG_TAG, "in system");
                         result = openExternal(url);
+                    }
+                    /**
+                     * CUSTOM TABS
+                     * If the option USE_CUSTOM_TABS is set to "yes",the CustomTabs Browser gets opened. Else, the default WebView will be used.
+                     */
+                    else if ("yes".equals(features.get(USE_CUSTOM_TABS))) {
+                        try {
+                          boolean showTitle = "yes".equals(features.get(LOCATION));
+                          boolean hideUrlBar = "yes".equals(features.get(HIDE_URL_BAR));
+                          String shareStateText = features.get(SHARE_STATE);
+                          int shareState = TextUtils.isEmpty(shareStateText) ? 0 : Integer.parseInt(shareStateText);
+                          String tc = features.get(TOOLBAR_COLOR);
+                          int toolbarColor = TextUtils.isEmpty("tc") ? Color.LTGRAY : android.graphics.Color.parseColor(tc);
+                          String closeButtonIcon = features.get(CLOSE_BUTTON_ICON);
+                          String closeButtonColor = features.get(CLOSE_BUTTON_COLOR);
+                          Bitmap closeIcon = createCloseIcon(closeButtonIcon, closeButtonColor);
+                          boolean openWebBrowserSucceeded = CustomTabs.openWebBrowser(cordova.getActivity(), url, toolbarColor, closeIcon, showTitle, hideUrlBar, shareState);
+                          LOG.d(LOG_TAG, "in custom tabs");
+                          result = "using custom tabs";
+                          if (!openWebBrowserSucceeded) {
+                            LOG.d(LOG_TAG, "in blank");
+                            result = showWebPage(url, features);
+                          }
+                        } catch (Exception e) {
+                          LOG.d(LOG_TAG, e.toString());
+                        }
                     }
                     // BLANK - or anything else
                     else {
@@ -1640,4 +1673,32 @@ public class InAppBrowser extends CordovaPlugin {
             super.onReceivedHttpAuthRequest(view, handler, host, realm);
         }
     }
+
+  /**
+   * Creates a closeIcon based on a Bitmap
+   * @param closeButtonIcon
+   * @param closeButtonColor
+   * @return
+   */
+  private Bitmap createCloseIcon(String closeButtonIcon, String closeButtonColor) {
+    Bitmap closeIcon = null;
+    if (!TextUtils.isEmpty(closeButtonIcon)) {
+        try {
+            closeIcon = BitmapFactory.decodeStream(cordova.getActivity().getAssets().open(closeButtonIcon));
+            if (!TextUtils.isEmpty(closeButtonColor)) {
+                int color = android.graphics.Color.parseColor(closeButtonColor);
+                Paint paint = new Paint();
+                paint.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
+                Bitmap bm = Bitmap.createBitmap(closeIcon.getWidth(), closeIcon.getHeight(), Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(bm);
+                canvas.drawBitmap(closeIcon, 0, 0, paint);
+                closeIcon = bm;
+            }
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Creating close button icon error" + e.getMessage());
+        }
+    }
+    return closeIcon;
+}
+
 }

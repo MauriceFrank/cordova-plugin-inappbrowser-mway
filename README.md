@@ -33,6 +33,10 @@ description: Open an in-app browser window.
 * closebuttonicon: (relative path string) path to icon to use as close button
 * statusbarstyle: (light or dark) defines status bar font color
 * shadowsize: (number) Android only, defines shadow below toolbar. On iOS, shadow looks always the same.
+#### Android only options
+* useCustomTabs: (string) defines if customTabs (default Google Chrome) shall be used as alternative browser. Accepted params "yes" or "no".
+* hideURLBar: (string) defines if the URL-bar shall be hidden during scrolling. Accepted params "yes" or "no".
+* shareState: (int) defines if the share-option shall be visible. Value "0" sets the share-option according to the default setting of the used browser. Value "1" explicitly enables the share-option. Value "2" disables the share-option.
 
 # cordova-plugin-inappbrowser
 

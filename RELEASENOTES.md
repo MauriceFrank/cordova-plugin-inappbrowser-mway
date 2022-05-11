@@ -20,6 +20,9 @@
 -->
 # Release Notes
 
+### 4.0.1 (May 10, 2022)
+* (https://github.com/mwaylabs/cordova-plugin-inappbrowser-mway/pull/7) (android) Integration of CustomTabsService to provide an optional Browser allowing additional functionalities e.g. PDF-Download
+
 ### 4.0.0 (Jun 09, 2020)
 * [GH-715](https://github.com/apache/cordova-plugin-inappbrowser/pull/715) (ios): fix regression in 2706f34
 * [GH-685](https://github.com/apache/cordova-plugin-inappbrowser/pull/685) chore: update install engines

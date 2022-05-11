@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-inappbrowser-mway",
-  "version": "5.0.2",
+  "version": "5.0.3",
   "description": "Cordova InAppBrowser Plugin",
   "types": "./types/index.d.ts",
   "cordova": {
